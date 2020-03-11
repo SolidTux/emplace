@@ -19,6 +19,8 @@ pub enum PackageSource {
     RustupComponent,
     /// Debian apt-get
     Apt,
+    /// Fedora DNF
+    Dnf,
     /// Arch Pacman
     Pacman,
     /// Linux Snap
@@ -45,6 +47,7 @@ impl PackageSource {
             PackageSource::Cargo => "Cargo Rust",
             PackageSource::RustupComponent => "Rustup Component",
             PackageSource::Apt => "Advanced Package Tool",
+            PackageSource::Dnf => "DNF",
             PackageSource::Pacman => "Pacman",
             PackageSource::Snap => "Snap",
             PackageSource::Chocolatey => "Chocolatey",
@@ -71,6 +74,7 @@ impl PackageSource {
             PackageSource::Cargo => "cargo",
             PackageSource::RustupComponent => "rustup",
             PackageSource::Apt => "apt",
+            PackageSource::Dnf => "dnf",
             PackageSource::Pacman => "pacman",
             PackageSource::Snap => "snap",
             PackageSource::Pip => "pip",
@@ -104,6 +108,7 @@ impl PackageSource {
             PackageSource::Cargo => vec!["cargo", "install", "--quiet"],
             PackageSource::RustupComponent => vec!["rustup", "component", "add"],
             PackageSource::Apt => vec!["apt", "install"],
+            PackageSource::Dnf => vec!["dnf", "install"],
             PackageSource::Pacman => vec!["pacman", "-Sy", "--noconfirm", "--quiet"],
             PackageSource::Snap => vec!["snap", "install"],
             PackageSource::Pip => vec!["pip", "install", "-q"],
@@ -136,6 +141,7 @@ impl PackageSource {
             PackageSource::Cargo => "cargo install --list | grep 'v[0-9]' | grep -q",
             PackageSource::RustupComponent => "rustup component list | grep -q",
             PackageSource::Apt => "dpkg-query --show",
+            PackageSource::Dnf => "dnf list --installed",
             PackageSource::Pacman => "pacman -Q",
             PackageSource::Snap => "snap | grep -Eo '^[^ ]+' | grep -q",
             PackageSource::Pip => "pip show -q",
@@ -168,6 +174,7 @@ impl PackageSource {
             PackageSource::Cargo => false,
             PackageSource::RustupComponent => false,
             PackageSource::Apt => true,
+            PackageSource::Dnf => false,
             PackageSource::Pacman => true,
             PackageSource::Snap => true,
             PackageSource::Chocolatey => true,

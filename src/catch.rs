@@ -14,6 +14,9 @@ pub fn catch(line: &str) -> Result<Packages, Box<dyn Error>> {
     // Parse APT
     packages.append(&mut match_apt(line)?);
 
+    // Parse Dnf
+    packages.append(&mut match_dnf(line)?);
+
     // Parse Pacman
     packages.append(&mut match_pacman(line)?);
 
@@ -74,6 +77,15 @@ fn match_apt(line: &str) -> Result<Vec<Package>, Box<dyn Error>> {
         line,
         PackageSource::Apt,
         r"apt(-get)?\s+(-\S+\s+)*install\s+(-\S+\s+)*(?P<name>[.\w\s-]+)",
+        r"^([[:alpha:]]\S*)",
+    )
+}
+
+fn match_dnf(line: &str) -> Result<Vec<Package>, Box<dyn Error>> {
+    match_multiple(
+        line,
+        PackageSource::Dnf,
+        r"dnf?\s+(-\S+\s+)*install\s+(-\S+\s+)*(?P<name>[.\w\s-]+)",
         r"^([[:alpha:]]\S*)",
     )
 }
@@ -271,6 +283,36 @@ mod tests {
         // Flags shouldn't trigger
         no_match(match_apt, "apt install -f");
         single_match(match_apt, "test", "sudo apt install test -f");
+    }
+
+    #[test]
+    fn test_dnf_matches() {
+        // Regular invocation
+        single_match(match_dnf, "test", "dnf install test");
+        single_match(match_dnf, "test", "sudo dnf install test");
+
+        // Multiple
+        multiple_match(match_dnf, vec!["test", "test2"], "dnf install test test2");
+        multiple_match(
+            match_dnf,
+            vec!["test", "test2", "test3"],
+            "dnf install test test2 test3",
+        );
+
+        // Command names
+        single_match(
+            match_dnf,
+            "lib32gfortran5-x32-cross",
+            "sudo dnf install lib32gfortran5-x32-cross",
+        );
+        single_match(match_dnf, "linux-perf-5.3", "dnf install linux-perf-5.3");
+
+        // With flags
+        single_match(match_dnf, "test", "sudo dnf install --enable=repo test");
+
+        // Flags shouldn't trigger
+        no_match(match_dnf, "dnf install -h");
+        single_match(match_dnf, "test", "sudo dnf install test -h");
     }
 
     #[test]
